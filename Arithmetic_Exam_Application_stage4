@@ -1,0 +1,88 @@
+# write your code here
+import random
+
+
+# def expression_reader:
+#     expression = '5 + 7'
+#     print(expression)
+#     # expression = input()
+#     expression_splitted = expression.split()
+#     print(expression_splitted)
+#     if expression_splitted[1] == "+":
+#         print(int(expression_splitted[0]) + int(expression_splitted[2]))
+#     elif expression_splitted[1] == "-":
+#         print(int(expression_splitted[0]) - int(expression_splitted[2]))
+#     elif expression_splitted[1] == "*":
+#         print(int(expression_splitted[0]) * int(expression_splitted[2]))
+
+# generate_expresion
+
+def verified_level_input():
+    while True:
+        input_string = input()
+        if input_string == '1' or input_string == '2':
+            return int(input_string)
+        print('Incorrect format.')
+
+def verified_digit_input():
+    while True:
+        input_string = input()
+        if input_string != '':
+            if (input_string[0] == "-" and input_string[1:].isdigit()) or input_string.isdigit():
+                return int(input_string)
+        print('Wrong format! Try again.')
+
+def verified_yes_no_input():
+    input_string = input()
+    return input_string.lower()
+
+def task(level):
+    # difficulty_level = 1
+    if level == 2:
+        base = random.randint(11, 29)
+        print(base)
+        return base ** 2
+    elif level == 1:
+        operation = random.choice(["+", "-", "*"])
+        left_side = random.randint(2, 9)
+        right_side = random.randint(2, 9)
+        print(f'{left_side} {operation} {right_side}')
+        if operation == "+":
+            return left_side + right_side
+        elif operation == "-":
+            return left_side - right_side
+        elif operation == "*":
+            return left_side * right_side
+
+
+level_text = ['zero level', 'simple operations with numbers 2-9', 'integral squares of 11-29']
+level_one = 'simple operations with numbers 2-9'
+level_two = 'integral squares of 11-29'
+
+print(f'Which level do you want? Enter a number:\n1 - {level_text[1]}\n2 - {level_text[2]}')
+level = verified_level_input()
+
+number_of_right_answers = 0
+for i in range(5):
+    right_answer = task(level)
+    user_answer = verified_digit_input()
+    if user_answer == right_answer:
+        print("Right!")
+        number_of_right_answers += 1
+    else:
+        print("Wrong!")
+print(f'Your mark is {number_of_right_answers}/5. Would you like to save the result? Enter yes or no.')
+
+yes_no = verified_yes_no_input()
+if yes_no == 'yes' or yes_no == 'y':
+    print('What is your name?')
+    name = input()
+    results = open('results.txt', 'a')
+    print(level_text[level])
+    results.write(f'{name}: {number_of_right_answers}/5 in level {level} ({level_text[level]}).')
+    results.close()
+    print('The results are saved in "results.txt".')
+
+
+
+
