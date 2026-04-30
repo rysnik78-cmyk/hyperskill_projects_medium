@@ -1,0 +1,42 @@
+# write your code here!
+import requests
+import json
+
+currency_you_have = input().lower()
+currency_address = f'http://www.floatrates.com/daily/{currency_you_have}.json'
+r = requests.get(currency_address)
+dict_from_json = json.loads(r.text)
+# print(dict_from_json)
+cache = {}
+# for currency in cache:
+if currency_you_have != "usd":
+    cache["usd"] = dict_from_json["usd"]['rate']
+if currency_you_have != "eur":
+    cache["eur"] = dict_from_json["eur"]['rate']
+    #     print(currency)
+    #     print(currency.lower())
+    # #   print(currency)
+    #     print(dict_from_json[currency.lower()]['rate'])
+    #     cache[currency] = dict_from_json[currency.lower()]['rate']
+
+# print(cache)
+
+while True:
+    final_currency_code = input().lower()
+    if not final_currency_code:
+        break
+    amount_of_currency_you_have = float(input())
+    # if amount_of_currency_you_have == 0:
+    #     break
+
+    print('Checking the cache...')
+    if final_currency_code in cache:
+        print('Oh! It is in the cache!')
+    else:
+        print('Sorry, but it is not in the cache!')
+        cache[final_currency_code] = dict_from_json[final_currency_code]['rate']
+        # print(cache)
+    exchange_rate = cache[final_currency_code]
+
+    currency_amount = round(amount_of_currency_you_have * exchange_rate, 2)
+    print(f'You received {currency_amount} {final_currency_code.upper()}.')
