@@ -1,0 +1,392 @@
+import string
+import operator
+
+
+
+def verify_add_student_input(student_data):
+    student_data_split = student_data.strip().split()
+    verification_status = {'credentials': False, 'first name': False, 'last name': False, 'email': False,
+                           'e-mail not taken': False}
+    if len(student_data_split) >= 3:
+        verification_status['credentials'] = True
+
+        # print(verification_output)
+        # print(student_data_split)
+        # print(student_data_split[0])
+        # print(v_fn(student_data_split[0]))
+        # print(student_data_split[1:-1])
+        # print(v_ln(student_data_split[1:-1]))
+        # print(student_data_split[-1])
+        # print(v_em(student_data_split[-1]))
+        verification_status['first name'] = v_fn(student_data_split[0])
+        verification_status['last name'] = v_ln(student_data_split[1:-1])
+        verification_status['email'] = v_em(student_data_split[-1])
+        if verification_status['email']:
+            verification_status['e-mail not taken'] = verify_mail_not_taken(student_data_split[-1])
+        return verification_status
+    else:
+        return verification_status
+
+
+def v_fn(name):
+    return verify_word_in_name(name)
+
+
+def verify_word_in_name(word):
+    if len(word) < 2:
+        return False
+    if word[0] == "'" or word[0] == "-":
+        return False
+    if word[-1] == "'" or word[-1] == "-":
+        return False
+
+    for letter_index in range(len(word)):
+        if not (word[letter_index] in string.ascii_letters or word[letter_index] == "'" or word[letter_index] == "-"):
+            return False
+        if (word[letter_index] == "'" or word[letter_index] == "-") and (
+                word[letter_index + 1] == "'" or word[letter_index + 1] == "-"):
+            return False
+    return True
+
+
+def v_ln(last_name):
+    # print(f'last name{last_name}')
+    for word in last_name:
+        if not verify_word_in_name(word):
+            return False
+
+    return True
+
+
+def v_em(email):
+    e_mail_split = email.split('@')
+    # print(e_mail_split)
+    if len(e_mail_split) != 2:
+        return False
+    if len(e_mail_split[0]) == 0 or len(e_mail_split[1]) == 0:
+        return False
+    if '.' not in e_mail_split[1]:
+        return False
+
+    return True
+
+
+def verify_mail_not_taken(email):
+    if student_database:
+        for key in student_database:
+            if student_database[key]['mail'] == email:
+                return False
+    return True
+
+
+def add_student_to_database(student_id, student_data):
+    student_data_split = student_data.strip().split()
+    student_id = int(student_id)
+    name = student_data_split[0]
+    last_name = "".join(student_data_split[1:-1])
+    email = student_data_split[-1]
+    student_database.update({student_id: {'name': name,
+                                          'last_name': last_name,
+                                          'mail': email,
+                                          'python': {'points':0, 'note': False},
+                                          'dsa': {'points':0, 'note': False},
+                                          'databases': {'points':0, 'note': False},
+                                          'flask': {'points':0, 'note': False}}})
+
+
+def verify_add_points(points_data):
+    points_data_split = points_data.strip().split()
+    if len(points_data_split) != 5:
+        return 'Incorrect points format.'
+    for element in points_data_split[1:]:
+        for letter in element:
+            if letter not in string.digits:
+                return 'Incorrect points format.'
+    for letter in points_data_split[0]:
+        if letter not in string.digits:
+            return f'No student is found for id={points_data_split[0]}'
+    student_id = int(points_data_split[0])
+    if student_id not in student_database:
+        return f'No student is found for id={student_id}'
+    else:
+        add_points_to_database(points_data_split)
+        return 'Points updated'
+
+
+def add_points_to_database(points_data):
+    student_id = int(points_data[0])
+    course_points = {'python': int(points_data[1]), 'dsa': int(points_data[2]), 'databases': int(points_data[3]),
+                     'flask': int(points_data[4])}
+    for course_name in course_points:
+        if course_points[course_name] > 0:
+            student_database[student_id][course_name]['points'] += course_points[course_name]
+            course_database[course_name]['submission_count'] += 1
+    print(course_database)
+
+
+def find(find_data):
+    find_data_strip = find_data.strip()
+    if len(find_data_strip) != 5:
+        return f'No student is found for id={find_data_strip}'
+    for letter in find_data_strip:
+        if letter not in string.digits:
+            return f'No student is found for id={find_data_strip}'
+    student_id = int(find_data_strip)
+    if student_id not in student_database:
+        return f'No student is found for id={find_data_strip}'
+    else:
+        return points_info_from_database(student_id)
+
+
+def points_info_from_database(student_id):
+    output_string = f'{student_id} points:'
+    for course_name in course_database.keys():
+        points_number = student_database[student_id][course_name]['points']
+        output_string += f' {course_name.capitalize()}={points_number}'
+    return output_string
+
+
+def verify_course_name_statistics(course_name):
+    course_name_strip_lower = course_name.strip().lower()
+    if course_name_strip_lower in course_database:
+        return create_course_statistics_string(course_name_strip_lower)
+    else:
+        return 'Unknown course'
+
+
+def create_course_statistics_string(course_name):
+    output_string = f'{course_name.capitalize()}\n'
+    output_string += 'id    points    completed\n'
+    ranking_list = {}
+    for student in student_database.keys():
+        if student_database[student][course_name]['points'] > 0:
+            ranking_list.update({student: student_database[student][course_name]['points']})
+    ranking_list_sorted = sorted(ranking_list.items(), key=operator.itemgetter(1), reverse=True)
+    max_points = course_database[course_name]['points_to_complete']
+    for student in ranking_list_sorted:
+        output_string += f'{student[0]} {student[1]} {' ' * (8 - len(str(student[1])))} {round(student[1] / max_points * 100, 1)}%\n'
+    return output_string
+
+
+def overall_statistics():
+    most_popular = 'n/a'
+    least_popular = 'n/a'
+    highest_activity = 'n/a'
+    lowest_activity = 'n/a'
+    easiest_course = 'n/a'
+    hardest_course = 'n/a'
+    course_statistics_popularity = {}
+    course_statistics_activity = {}
+    course_statistics_grade = {}
+    for course_name in course_database.keys():
+        popularity = 0
+        activity = course_database[course_name]['submission_count']
+        course_statistics_activity.update({course_name: activity})
+        total_points = 0
+        for student in student_database.keys():
+            if student_database[student][course_name]['points'] > 0:
+                popularity += 1
+            total_points += student_database[student][course_name]['points']
+        course_statistics_popularity.update({course_name: popularity})
+        if popularity > 0:
+            average_grade = total_points / activity
+            course_statistics_grade.update({course_name: average_grade})
+    # print(f'popularity{course_statistics_popularity}')
+    # print(f'activity{course_statistics_activity}')
+    # print(f'grade{course_statistics_grade}')
+    course_statistics_popularity_sorted = sorted(course_statistics_popularity.items(), key=operator.itemgetter(1),
+                                                 reverse=True)
+
+    # print(course_statistics_popularity_sorted)
+    # print(f'mostpop{course_statistics_popularity_sorted[0][0]}')
+    if course_statistics_popularity_sorted[0][1] > 0:
+        most_popular = first_place(course_statistics_popularity_sorted)
+        least_popular = first_place(sorted(course_statistics_popularity.items(), key=operator.itemgetter(1)))
+        if most_popular == least_popular:
+            least_popular = 'n/a'
+
+    course_statistics_activity_sorted = sorted(course_statistics_activity.items(), key=operator.itemgetter(1),
+                                               reverse=True)
+    # print(course_statistics_activity_sorted)
+    if course_statistics_activity_sorted[0][1] > 0:
+        highest_activity = first_place(course_statistics_activity_sorted)
+        lowest_activity = first_place(sorted(course_statistics_activity.items(), key=operator.itemgetter(1)))
+        if highest_activity == lowest_activity:
+            lowest_activity = 'n/a'
+
+    if course_statistics_grade:
+        course_statistics_grade_sorted = sorted(course_statistics_grade.items(), key=operator.itemgetter(1),
+                                                reverse=True)
+        if course_statistics_grade_sorted[0][1] > 0:
+            # print(course_statistics_grade_sorted)
+            easiest_course = first_place(course_statistics_grade_sorted)
+            hardest_course = first_place(sorted(course_statistics_grade.items(), key=operator.itemgetter(1)))
+            if easiest_course == hardest_course:
+                hardest_course = 'n/a'
+
+    output_string = (f'''Most popular: {most_popular}
+Least popular: {least_popular}
+Highest activity: {highest_activity}
+Lowest activity: {lowest_activity}
+Easiest course: {easiest_course}
+Hardest course: {hardest_course}''')
+    return output_string
+
+
+def first_place(sorted_ranking):
+    current_highest_score = sorted_ranking[0][1]
+    first = sorted_ranking[0][0].capitalize()
+    for item in sorted_ranking[1:]:
+        if item[1] == current_highest_score:
+            first += f' {item[0].capitalize()}'
+            # print(item[0].capitalize())
+            # print(first)
+        else:
+            return first
+    return first
+
+def notify():
+    output_string = ''
+    no_of_students_notified = 0
+    for student_id in student_database.keys():
+        notification = False
+        for course_name in course_database.keys():
+            if not student_database[student_id][course_name]['note']:
+                if student_database[student_id][course_name]['points'] >= course_database[course_name]['points_to_complete']:
+                    email = student_database[student_id]['mail']
+                    fname = student_database[student_id]['name']
+                    lname = student_database[student_id]['last_name']
+                    output_string += f'To: {email}\nRe: Your Learning Progress\nHello, {fname} {lname}! You have accomplished our {course_name} course!\n'
+                    student_database[student_id][course_name]['note'] = True
+                    notification = True
+        if notification:
+            no_of_students_notified += 1
+    output_string += f'Total {no_of_students_notified} students have been notified.'
+    return output_string
+
+
+
+
+print("Learning progress tracker")
+current_state = 'main'
+added_students = 0
+student_database = {}
+course_database = {'python': {'submission_count': 0, 'points_to_complete': 600},
+                   'dsa': {'submission_count': 0, 'points_to_complete': 400},
+                   'databases': {'submission_count': 0, 'points_to_complete': 480},
+                   'flask': {'submission_count': 0, 'points_to_complete': 550}}
+
+# print(student_database)
+next_free_id = 10000
+
+while True:
+    command = input()
+    if current_state == 'main':
+        command_lower = command.strip().lower()
+
+        if command_lower == "exit":
+            print('Bye!')
+            break
+        elif command_lower == "back":
+            print("Enter 'exit' to exit the program.")
+            continue
+
+        elif command_lower == "add students":
+            print("Enter student credentials or 'back' to return:")
+            current_state = 'add_students'
+            number_of_students_added = 0
+            continue
+
+        elif command_lower == "":
+            print('No input')
+            continue
+
+        elif command_lower == "list":
+
+            if student_database:
+                print('Students:')
+                for key in student_database:
+                    print(key)
+            else:
+                print('No students found')
+            continue
+
+        elif command_lower == "add points":
+            print("Enter an id and points or 'back' to return")
+            current_state = 'add_points'
+            continue
+
+        elif command_lower == "find":
+            print("Enter an id or 'back' to return")
+            current_state = 'find'
+            continue
+
+        elif command_lower == "statistics":
+            print("Type the name of a course to see details or 'back' to quit")
+            print(overall_statistics())
+            current_state = 'statistics'
+            continue
+
+        elif command_lower == "notify":
+            print(notify())
+
+        else:
+            print('Error: Unknown command!')
+            continue
+
+    if current_state == 'add_students':
+
+        if command.strip().lower() == 'back':
+            print(f'Total {added_students} students have been added.')
+            current_state = 'main'
+            added_students = 0
+            continue
+
+        verification_status = verify_add_student_input(command)
+        # print(verification_status)
+        if not verification_status['credentials']:
+            print('Incorrect credentials.')
+            continue
+        verification_ok = True
+        for key in verification_status:
+            if key != 'credentials' and key != 'e-mail not taken':
+                if not verification_status[key]:
+                    print(f'Incorrect {key}.')
+                    verification_ok = False
+        if not verification_ok:
+            continue
+
+        if verification_status['e-mail not taken']:
+            add_student_to_database(next_free_id, command)  # add credential to the base
+            print('The student has been added.')
+            print(student_database)
+            next_free_id += 1
+            added_students += 1
+            continue
+        else:
+            print('This email is already taken.')
+            continue
+
+    if current_state == 'add_points':
+        if command.strip().lower() == 'back':
+            current_state = 'main'
+            continue
+        print(verify_add_points(command))
+        continue
+
+    if current_state == 'find':
+        if command.strip().lower() == 'back':
+            current_state = 'main'
+            continue
+        print(find(command))
+        continue
+
+    if current_state == 'statistics':
+        if command.strip().lower() == 'back':
+            current_state = 'main'
+            continue
+        print(verify_course_name_statistics(command))
+        continue
+
+# print('The end')
+
