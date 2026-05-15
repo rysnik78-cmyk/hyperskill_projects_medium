@@ -1,0 +1,59 @@
+# Write your code here
+import random
+import string
+
+
+list_of_words = ['python', 'java', 'swift', 'javascript']
+print('H A N G M A N  # 8 attempts')
+won_games = 0
+lost_games = 0
+
+while True:
+    print('Type "play" to play the game, "results" to show the scoreboard, and "exit" to quit:')
+    command = input()
+    if command == 'exit':
+        break
+    if command == 'results':
+        print(f'You won: {won_games} times')
+        print(f'You lost: {lost_games} times')
+        continue
+    if command == 'play':
+
+        hidden_word = random.choice(list_of_words)
+        help_string = '-' * len(hidden_word)
+        attempts_left = 8
+        while attempts_left > 0:
+            if hidden_word == help_string:
+                print(f'You guessed the word {hidden_word}!\nYou survived!')
+                won_games += 1
+                break
+            print(f'\n{help_string}')
+            input_char = input(f'Input a letter:')
+
+            if len(input_char) != 1:
+                print('Please, input a single letter.')
+                continue
+            if input_char not in string.ascii_lowercase:
+                print('Please, enter a lowercase letter from the English alphabet.')
+                continue
+
+            if input_char in hidden_word:
+                if input_char in help_string:
+                    print("You've already guessed this letter.")
+                else:
+                    new_help_string = ''
+                    for index in range(len(hidden_word)):
+                        if hidden_word[index] == input_char:
+                            new_help_string += input_char
+                        else:
+                            new_help_string += help_string[index]
+                    help_string = new_help_string
+                    continue
+
+            else:
+                attempts_left -= 1
+                print("That letter doesn't appear in the word.")
+                print(f'# {attempts_left} attempts')
+                if attempts_left == 0:
+                    print('\nYou lost!')
+                    lost_games += 1
