@@ -1,0 +1,93 @@
+# write your code here
+
+import string
+
+def print_grid(grid_string):
+    print('---------')
+    for row in range(3):
+        line = '|'
+        for column in range(3):
+            line += f' {grid_string[row * 3 + column]}'
+        line += ' |'
+        print(line)
+    print('---------')
+
+def analyze_game_state(grid_string):
+    number_of_x = grid_string.count('X')
+    number_of_y = grid_string.count('O')
+    empty_cell_number = 9 - number_of_x - number_of_y
+
+    three_x = three_in_row(grid_string,'X')
+    three_o = three_in_row(grid_string,'O')
+
+    if abs(number_of_x - number_of_y) > 1 or three_x == three_o == 1:
+        return 'Impossible'
+    if three_x == three_o == 0 and empty_cell_number > 0:
+        return 'Game not finished'
+    if three_x == three_o == 0 and empty_cell_number == 0:
+        return 'Draw'
+    if three_x == 1:
+        return 'X wins'
+    if three_o == 1:
+        return 'O wins'
+    return '?'
+
+def three_in_row(grid_string, char):
+    tir_patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+    tir_number = 0
+    for pattern in tir_patterns:
+        # print(pattern)
+        for index in range(3):
+
+            if grid_string[pattern[index]] != char:
+                break
+            if index == 2:
+                tir_number += 1
+    return tir_number
+
+def verify(actual_grid, user_move):
+    for part in user_move.split(' '):
+        if part not in string.digits:
+            return 'You should enter numbers!'
+        elif int(part) > 3 or int(part) < 1:
+            return 'Coordinates should be from 1 to 3!'
+        elif actual_grid[index_from_coordinates(user_move)] != '_':
+            return 'This cell is occupied! Choose another one!'
+
+    return 'valid'
+
+def index_from_coordinates(coordinates):
+    coordinates = user_move_input.split(' ')
+    column = int(coordinates[1])
+    row = int(coordinates[0])
+    index_to_change = (row - 1) * 3 + (column - 1)
+    return index_to_change
+
+def update_grid_string(grid_string, user_move_input):
+    index_to_change = index_from_coordinates(user_move_input)
+    now_moves = ['O','X']
+    now_move_index = grid_string.count('_') % 2
+    updated_string = grid_string[0:index_to_change] + now_moves[now_move_index] + grid_string[index_to_change + 1:]
+    # print(updated_string)
+    return updated_string
+
+
+# input_grid_string = input()
+actual_grid_string = '_________'
+print_grid(actual_grid_string)
+while True:
+    while True:
+        user_move_input = input()
+        verification_status = verify(actual_grid_string, user_move_input)
+        if verification_status == 'valid':
+            break
+        else:
+            print(verification_status)
+    actual_grid_string = update_grid_string(actual_grid_string, user_move_input)
+    # print(actual_grid_string)
+    print_grid(actual_grid_string)
+    game_state = analyze_game_state(actual_grid_string)
+    if game_state != 'Game not finished':
+        print(game_state)
+        break
+
