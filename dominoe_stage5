@@ -1,0 +1,221 @@
+import random
+import operator
+
+def highest_double(pieces):
+    highest_double_piece = []
+    for piece in pieces:
+        if not highest_double_piece:
+            if piece[0] == piece[1]:
+                highest_double_piece = piece
+        else:
+            if piece[0] == piece[1] and piece[0] > highest_double_piece[0]:
+                highest_double_piece = piece
+
+    return highest_double_piece
+
+def print_snake(snake):
+    string_to_print = ''
+    for index in range(len(domino_snake)):
+         if len(domino_snake) > 6 and (index > 2 and index < len(domino_snake) - 3):
+             if index == len(domino_snake) - 4:
+                 string_to_print += '...'
+         else:
+            string_to_print += str(snake[index])
+    print(string_to_print)
+
+def snake_has_eight(number_to_find):
+    number_count = 0
+    for piece in domino_snake:
+        for number in piece:
+            if number == number_to_find:
+                number_count += 1
+                print(number_count)
+                if number_count == 8:
+                    return True
+
+    return False
+
+def matching_head(piece_to_match):
+    ending_number = domino_snake[-1][1]
+    if piece_to_match[0] == ending_number:
+        return piece_to_match
+    elif piece_to_match[1] == ending_number:
+        return reorient(piece_to_match)
+    else:
+        return False
+
+def matching_tail(piece_to_match):
+        ending_number = domino_snake[0][0]
+        if piece_to_match[1] == ending_number:
+            return piece_to_match
+        elif piece_to_match[0] == ending_number:
+            return reorient(piece_to_match)
+        else:
+            return False
+
+def reorient(piece):
+    return [piece[1], piece[0]]
+
+def pieces_index_sorted_by_rarity(pieces):
+    all_pieces = []
+    all_pieces.extend(pieces + domino_snake)
+    rarity = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0}
+    for piece in all_pieces:
+        for number in piece:
+            rarity[number] += 1
+    piece_index_plus_rarity = {piece_index: rarity[pieces[piece_index][0]] + rarity[pieces[piece_index][1]] for piece_index in range(len(pieces))}
+    return dict(sorted(piece_index_plus_rarity.items(), key=operator.itemgetter(1), reverse=True))
+
+
+start_stock_pieces = [[2, 5], [1, 2], [3, 6], [0, 0], [0, 2], [5, 6], [3, 5], [2, 4], [3, 4], [1, 5], [0, 4], [2, 6],
+                      [3, 3], [1, 1], [1, 4], [1, 3], [2, 3], [4, 5], [2, 2], [0, 3], [0, 6], [5, 5], [4, 4], [4, 6],
+                      [0, 1], [0, 5], [1, 6], [6, 6]]
+domino_snake = []
+while True:
+    # Start of the game
+    # pieces shuffled and distributed
+    random.shuffle(start_stock_pieces)
+    computer_pieces = start_stock_pieces[:7]
+    player_pieces = start_stock_pieces[7:14]
+    actual_stock_pieces = start_stock_pieces[14:]
+    # print(f'Stock pieces: {actual_stock_pieces}')
+    # print(f'Computer pieces: {computer_pieces}')
+    # print(f'Player pieces: {player_pieces}')
+
+    # checking who has highest double with the use of highest double function
+    computer_highest_double = highest_double(computer_pieces)
+    player_highest_double = highest_double(player_pieces)
+    if computer_highest_double or player_highest_double:
+    # if no one has the double then back to shuffle and distribution once again
+        break
+
+# checking who starts first taking under consideration highest double and making the first turn
+if computer_highest_double and player_highest_double:
+    if computer_highest_double[0] > player_highest_double[0]:
+        domino_snake.append(computer_highest_double)
+        status = 'player'
+        computer_pieces.remove(computer_highest_double)
+    else:
+        domino_snake.append(player_highest_double)
+        status = 'computer'
+        player_pieces.remove(player_highest_double)
+
+else:
+    if computer_highest_double:
+        domino_snake.append(computer_highest_double)
+        status = 'player'
+        computer_pieces.remove(computer_highest_double)
+    else:
+        domino_snake.append(player_highest_double)
+        status = 'computer'
+        player_pieces.remove(player_highest_double)
+# print(f'Stock pieces: {actual_stock_pieces}')
+# print(f'Computer pieces: {computer_pieces}')
+# print(f'Player pieces: {player_pieces}')
+# print(f'Domino snake: {domino_snake}')
+# print(f'Status: {status}')
+
+# starting the loop of the game after the first turn is finished
+
+while True:
+    # print(f'Status start: {status}')
+    # printing curren state of the game
+    print('=' * 70)
+    print(f'Stock size: {len(actual_stock_pieces)}')
+    print(f'Computer pieces: {len(computer_pieces)}\n')
+    print_snake(domino_snake)
+    print('')
+    print('Your pieces:')
+    for piece_index in range(len(player_pieces)):
+        print(f'{piece_index+1}:{player_pieces[piece_index]}')
+
+    # check the game result
+    if len(computer_pieces) == 0:
+        print('Status: The game is over. The computer won!')
+        break
+    elif len(player_pieces) == 0:
+        print('Status: The game is over. You won!')
+        break
+    elif domino_snake[0][0] == domino_snake[-1][-1] and snake_has_eight(domino_snake[0][0]):
+        print("Status: The game is over. It's a draw!")
+        break
+
+    # new turn of player
+
+    if status == 'player':
+        print("\nStatus: It's your turn to make a move. Enter your command.")
+        while True:
+            move_input_string = input()
+            try:
+                move_input = int(move_input_string)
+            except:
+                print('Invalid input. Please try again.')
+                continue
+            if abs(move_input) > len(player_pieces):
+                print('Invalid input. Please try again.')
+                continue
+
+            if move_input > 0:
+                if not matching_head(player_pieces[move_input - 1]):
+                    print('Illegal move. Please try again.')
+                    continue
+                else:
+                    domino_snake.append(matching_head(player_pieces[move_input - 1]))
+                    del player_pieces[abs(move_input) - 1]
+                    break
+            if move_input < 0:
+                if not matching_tail(player_pieces[abs(move_input) - 1]):
+                    print('Illegal move. Please try again.')
+                    continue
+                else:
+                    new_domino_snake = []
+                    new_domino_snake.append(matching_tail(player_pieces[abs(move_input) - 1]))
+                    new_domino_snake.extend(domino_snake)
+                    domino_snake = new_domino_snake
+                    del player_pieces[abs(move_input) - 1]
+                    break
+            else:
+                break
+        if move_input == 0:
+            if len(actual_stock_pieces) > 0:
+                player_pieces.append(actual_stock_pieces.pop(0))
+        status = 'computer'
+        continue
+
+    # new turn of computer
+
+    if status == 'computer':
+        print("\nStatus: Computer is about to make a move. Press Enter to continue...")
+        input_sth = ''
+        input_sth = input()
+        found_match = False
+        pieces_index_sorted_dic = pieces_index_sorted_by_rarity(computer_pieces)
+
+        for piece_key in pieces_index_sorted_dic.keys():
+            if matching_head(computer_pieces[piece_key]):
+                domino_snake.append(matching_head(computer_pieces[piece_key]))
+                del computer_pieces[piece_key]
+                found_match = True
+                break
+            elif matching_tail(computer_pieces[piece_key]):
+                new_domino_snake = []
+                new_domino_snake.append(matching_tail(computer_pieces[piece_key]))
+                new_domino_snake.extend(domino_snake)
+                domino_snake = new_domino_snake
+                del computer_pieces[piece_key]
+                found_match = True
+                break
+
+        if not found_match:
+            if len(actual_stock_pieces) > 0:
+                computer_pieces.append(actual_stock_pieces.pop(0))
+
+        status = 'player'
+        continue
+
+
+
+
+
+
+
