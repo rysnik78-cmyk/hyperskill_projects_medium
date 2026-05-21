@@ -1,0 +1,85 @@
+class XmasTree:
+    def __init__(self, h, interval):
+        self.h = h
+        self.interval = interval
+
+    def print_tree_s3(self):
+        print(' ' * (self.h - 1) + 'X')
+        print(' ' * (self.h - 1) + '^')
+        print(' ' * (self.h - 2) + '/*\\')
+        decoration_number = 0
+        for i in range(1, self.h - 1):  # i - tree level e.g. from 1 to height - 2 (for h=5)
+            decoration_string = ''
+            for decor in range(i):
+                if decoration_number % self.interval == 0:
+                    decoration_string += 'O*'
+                else:
+                    decoration_string += '**'
+                decoration_number += 1
+            print(' ' * (self.h - 2 - i) + '/' + '*' + decoration_string + '\\')
+        print(' ' * (self.h - 2) + '| |')
+
+    def return_tree_string(self):
+        list_of_strings = ['X', '^', '/*\\']
+        decoration_number = 0
+        for i in range(1, self.h - 1):  # i - tree level e.g. from 1 to height - 2 (for h=5)
+            decoration_string = ''
+            for decor in range(i):
+                if decoration_number % self.interval == 0:
+                    decoration_string += 'O*'
+                else:
+                    decoration_string += '**'
+                decoration_number += 1
+            list_of_strings.append('/' + '*' + decoration_string + '\\')
+        list_of_strings.append('| |')
+        return list_of_strings
+
+class XmasCard:
+    def __init__(self, card_columns, card_lines):
+        self.card_lines = card_lines
+        self.card_columns = card_columns
+        self.list_of_strings = []
+        self.list_of_strings.append('-' * self.card_columns)
+        for line in range(self.card_lines - 2):
+            if line == 27 - 1:
+                white_spaces = ' ' * int((self.card_columns - 12) / 2)
+                self.list_of_strings.append('|' + white_spaces + 'Merry Xmas' + white_spaces + '|')
+            else:
+                self.list_of_strings.append('|' + ' ' * (self.card_columns - 2) + '|')
+        self.list_of_strings.append('-' * self.card_columns)
+
+    def print_card(self):
+        for line in self.list_of_strings:
+            print(line)
+
+    def add_tree_oop(self, line_coord, column_coord, tree_height, tree_interval):
+        old_card = self.list_of_strings
+        self.list_of_strings = []
+        xms_tree = XmasTree(tree_height, tree_interval)
+        tree_list_of_strings = xms_tree.return_tree_string()
+        for line_index in range(self.card_lines):
+            if line_coord + len(tree_list_of_strings) > line_index >= line_coord:
+                offset = len(tree_list_of_strings[line_index - line_coord]) // 2
+                left_side = old_card[line_index][:column_coord - offset]
+                right_side = old_card[line_index][column_coord + offset + 1:]
+                self.list_of_strings.append(left_side + tree_list_of_strings[line_index - line_coord] + right_side)
+            else:
+                self.list_of_strings.append(old_card[line_index])
+
+input_string = input()
+input_split = input_string.split()
+
+if len(input_split) % 4 == 0:
+    my_card = XmasCard(50, 30)
+    for quartet in range(len(input_split) // 4):
+        input_height = int(input_split[quartet * 4 + 0])
+        interval_input = int(input_split[quartet * 4 + 1])
+        input_line_coord = int(input_split[quartet * 4 + 2])
+        input_column_coord = int(input_split[quartet * 4 + 3])
+        my_card.add_tree_oop(input_line_coord, input_column_coord, input_height, interval_input)
+    my_card.print_card()
+elif len(input_split) == 2:
+    input_height = int(input_split[0])
+    interval_input = int(input_split[1])
+    my_tree = XmasTree(input_height, interval_input)
+    my_tree.print_tree_s3()
