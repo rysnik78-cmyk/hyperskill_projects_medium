@@ -1,0 +1,148 @@
+# Write your code here
+def check(v1, v2, v3):
+    msg = ''
+    if is_one_digit(v1) and is_one_digit(v2):
+        msg += msg_6
+    if (v1 == 1 or v2 == 1) and v3 == '*':
+        msg += msg_7
+    if (v1 == 0 or v2 == 0) and (v3 == '*' or v3 == '+' or v3 == '-'):
+        msg += msg_8
+    if msg != '':
+        msg = msg_9 + msg
+        print(msg)
+    pass
+
+
+def is_one_digit(v):
+    if -10 < v < 10 and v.is_integer() == True:
+        return True
+    else:
+        return False
+
+
+memory = 0
+
+msg_0 = "Enter an equation"
+msg_1 = "Do you even know what numbers are? Stay focused!"
+msg_2 = "Yes ... an interesting math operation. You've slept through all classes, haven't you?"
+msg_3 = "Yeah... division by zero. Smart move..."
+msg_4 = "Do you want to store the result? (y / n):"
+msg_5 = "Do you want to continue calculations? (y / n):"
+msg_6 = " ... lazy"
+msg_7 = " ... very lazy"
+msg_8 = " ... very, very lazy"
+msg_9 = "You are"
+msg_10 = "Are you sure? It is only one digit! (y / n)"
+msg_11 = "Don't be silly! It's just one number! Add to the memory? (y / n)"
+msg_12 = "Last chance! Do you really want to embarrass yourself? (y / n)"
+
+msg_ = ["Enter an equation",
+        "Do you even know what numbers are? Stay focused!",
+        "Yes ... an interesting math operation. You've slept through all classes, haven't you?",
+        "Yeah... division by zero. Smart move...",
+        "Do you want to store the result? (y / n):",
+        "Do you want to continue calculations? (y / n):",
+        " ... lazy",
+        " ... very lazy",
+        " ... very, very lazy",
+        "You are",
+        "Are you sure? It is only one digit! (y / n)",
+        "Don't be silly! It's just one number! Add to the memory? (y / n)",
+        "Last chance! Do you really want to embarrass yourself? (y / n)"]
+
+result = 0
+while True:
+    while True:  #reading the inputs for calculations
+        print(msg_0)
+        calc = input()
+        calc_split = calc.split()
+        x = calc_split[0]
+        y = calc_split[2]
+        if x == 'M':
+            x = memory
+        else:
+            try:
+                x = float(x)
+            except ValueError:
+                print(msg_1)
+                continue
+
+        if y == 'M':
+            y = memory
+        else:
+            try:
+                y = float(y)
+            except ValueError:
+                print(msg_1)
+                continue
+
+        oper = calc_split[1]
+        if oper not in ["+", "-", "*", "/"]:
+            print(msg_2)
+            continue
+        else:
+            check(x, y, oper)
+
+        if oper == "+":
+            result = x + y
+            break
+        elif oper == "-":
+            result = x - y
+            break
+        elif oper == "*":
+            result = x * y
+            break
+        elif oper == "/":
+            if y == 0:
+                print(msg_3)
+                continue
+            else:
+                result = x / y
+                break
+
+    print(result)
+    while True:  # saving to memory
+        print(msg_4)
+        answer_msg4 = input()
+        if answer_msg4 == "y":
+
+            if is_one_digit(result):
+                msg_index = 10
+                while True:
+                    print(msg_[msg_index])
+                    answer_iod = input()    # answer in the "is one digit" branch of algorithm
+                    if answer_iod == "y":
+                        if msg_index < 12:
+                            msg_index += 1
+                            continue
+                        else:
+                            memory = result
+                            break
+                    elif answer_iod == "n":
+                        break
+                    else:
+                        continue
+            else:
+                memory = result
+            break
+
+
+        elif answer_msg4 == "n":
+            break
+        else:
+            continue
+    while True:  # continue the cal ?
+        print(msg_5)
+        answer = input()
+        if answer == "y":
+            break
+        elif answer == "n":
+            break
+        else:
+            continue
+    if answer == "n":
+        break
+
+
+
+
