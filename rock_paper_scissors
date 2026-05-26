@@ -1,0 +1,82 @@
+# Write your code here
+
+import random
+
+class Fair_Random_Game:
+    def __init__(self, list_of_options):
+        self.list_of_options = list_of_options
+        self.random_computer_choice = random.randint(0,len(list_of_options)-1)
+        # print(f'comp choice {self.random_computer_choice}')
+        self.winning_option = self.winning_option(self.random_computer_choice)
+        # print(f'winning choice {self.winning_option}')
+        self.draw_option = self.random_computer_choice
+        # print(f'draw choice {self.draw_option}')
+        self.lose_option = self.loosing_option(self.random_computer_choice)
+        # print(f'lose_choice {self.lose_option}')
+
+    def winning_option(self, opponent_choice):
+        winning_options = []
+        for i in range(1, len(self.list_of_options)//2 + 1):
+            winning_options.append((opponent_choice + i) % len(self.list_of_options))
+        return winning_options
+
+    def loosing_option(self, opponent_choice):
+        loosing_options = []
+        for i in range(1, len(self.list_of_options) // 2 + 1):
+            loosing_options.append((opponent_choice - i) % len(self.list_of_options))
+        return loosing_options
+
+    def result(self, user_choice):
+        if user_choice in self.winning_option:
+            return [f'Well done. The computer chose {self.list_of_options[self.random_computer_choice]} and failed', 100]
+        elif user_choice in self.lose_option:
+            return [f'Sorry, but the computer chose {self.list_of_options[self.random_computer_choice]}', 0]
+        else:
+            return [f'There is a draw ({self.list_of_options[self.random_computer_choice]})', 50]
+
+
+user_name = input('Enter your name:')
+print(f'Hello, {user_name}')
+score_count = 0
+file = open('rating.txt', 'r')
+for line in file:
+    line_split = line.split()
+    if user_name == line_split[0]:
+        score_count += int(line_split[1])
+        break
+file.close()
+print(f'Your score {user_name} is: {score_count}')
+list_of_options_input = input()
+if list_of_options_input:
+    list_of_options_input_split = list_of_options_input.split(',')
+else:
+    list_of_options_input_split = ['rock', 'paper', 'scissors']
+# print(list_of_options_input_split)
+print("Okay, let's start")
+
+
+while True:
+
+    user_command = input().lower()
+    if user_command in list_of_options_input_split:
+        my_game = Fair_Random_Game(list_of_options_input_split)
+        user_choice = list_of_options_input_split.index(user_command)
+        # print(user_choice)
+        # print(list_of_options_input_split[user_choice])
+    elif user_command == '!exit':
+        print('Bye!')
+        break
+    elif user_command == '!rating':
+        print(f'Your rating: {score_count}')
+        continue
+    else:
+        print('Invalid input')
+        continue
+
+
+    result = my_game.result(user_choice)
+    score_count += result[1]
+    print(result[0])
+
+    continue
+
