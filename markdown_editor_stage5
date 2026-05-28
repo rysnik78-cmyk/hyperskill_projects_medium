@@ -1,0 +1,126 @@
+class MarkdownText:
+    def __init__(self):
+        self.full_text = ''
+
+    def add_header(self):
+        while True:
+            level = int(input('Level:'))
+            if 1 > level or level > 6:
+                print('The level should be within the range of 1 to 6')
+                continue
+            else:
+                break
+        text = input('Text:')
+        if not (self.full_text):
+            self.full_text += '#' * level + ' ' + text + '\n'
+        else:
+            if self.full_text[-1] == '\n':
+                self.full_text += '#' * level + ' ' + text + '\n'
+            else:
+                self.full_text += '\n' + '#' * level + ' ' + text + '\n'
+
+    def print_text(self):
+        print(self.full_text)
+
+    def add_plain(self):
+        text = input('Text: ')
+        self.full_text += text
+
+    def add_bold(self):
+        text = input('Text: ')
+        self.full_text += '**' + text + '**'
+
+    def add_italic(self):
+        text = input('Text: ')
+        self.full_text += '*' + text + '*'
+
+    def add_inline_code(self):
+        text = input('Text: ')
+        self.full_text += '`' + text + '`'
+
+    def add_new_line(self):
+        self.full_text += '\n'
+
+    def add_link(self):
+        label = input('Label: ')
+        url = input('URL: ')
+        self.full_text += '[' + label + ']' + '(' + url + ')'
+
+    def add_list(self, point_sign=None):
+        while True:
+            number_of_rows = int(input('Number of rows: '))
+            if number_of_rows < 1:
+                print('The number of rows should be greater than zero')
+                continue
+            else:
+                break
+
+        if self.full_text and self.full_text[-1] != '\n':
+            self.full_text += '\n'
+
+        for i in range(1, number_of_rows + 1):
+
+            text = input(f'Row #{i}:')
+
+            if point_sign is None:
+                self.full_text += str(i) + '. ' + text + '\n'
+            else:
+                self.full_text += point_sign + ' ' + text + '\n'
+
+    def save_text(self, file_name):
+        my_file = open(file_name, 'w')
+        my_file.write(self.full_text)
+        my_file.close()
+
+
+
+my_text = MarkdownText()
+formatters = ['plain', 'bold', 'italic', 'header', 'link', 'inline-code', 'new-line', 'ordered-list', 'unordered-list']
+status = 'main menu'
+while True:
+
+    command = input('Choose a formatter:')
+
+    if command == '!help':
+        print(
+            'Available formatters: plain bold italic header link inline-code ordered-list unordered-list new-line\nSpecial commands: !help !done')
+        continue
+
+    elif command in formatters:
+        if command == 'header':
+            my_text.add_header()
+
+        elif command == 'plain':
+            my_text.add_plain()
+
+        elif command == 'bold':
+            my_text.add_bold()
+
+        elif command == 'italic':
+            my_text.add_italic()
+
+        elif command == 'inline-code':
+            my_text.add_inline_code()
+
+        elif command == 'new-line':
+            my_text.add_new_line()
+
+        elif command == 'link':
+            my_text.add_link()
+
+        elif command == 'ordered-list':
+            my_text.add_list()
+
+        elif command == 'unordered-list':
+            my_text.add_list('*')
+
+        my_text.print_text()
+        continue
+
+    elif command == '!done':
+        my_text.save_text('output.md')
+        break
+
+    else:
+        print('Unknown formatting type or command')
+        continue
