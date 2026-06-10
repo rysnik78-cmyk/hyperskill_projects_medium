@@ -1,0 +1,324 @@
+import os
+import shutil
+
+# run the user's program in our generated folders
+
+# put your code here
+def pwd():  # tells you in which directory you currently are
+    return os.getcwd()
+
+
+def cd(path):  # changes the current directory
+    try:
+        os.chdir(path)
+    except FileNotFoundError:
+        print("Directory does not exist")
+    absolute_dir = os.getcwd()
+    current_dir = absolute_dir.split("\\")[-1]
+    print(current_dir)
+
+
+def ls(param=None):
+    raw_list_of_files = os.listdir()
+    if raw_list_of_files:
+        alfa = sorted(raw_list_of_files)
+        list_of_files_sorted = sorted(alfa, key=lambda x: len(x.split('.')))  # directories first then files
+        for file in list_of_files_sorted:
+            # print(file)
+            if param is None or '.' not in file:
+                print(file)
+            elif '.' in file and param == "-l":
+                print(file + ' ' + str(os.stat(file).st_size))
+            elif '.' in file and param == "-lh":
+                print(file + ' ' + hr_size_string(os.stat(file).st_size))
+
+
+def hr_size_string(file_size_bytes):
+    names = ['B', 'KB', 'MB', 'GB']
+    for n, name in enumerate(names):
+        if file_size_bytes < 1024 ** (n + 1) or name == 'GB':
+            return f'{round(file_size_bytes / (1024 ** n))}{name}'
+    return None
+
+def rm(path):
+
+    if path is None:
+        print("Specify the file or directory")
+
+    elif is_file(path):
+        # print('file')
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            print("No such file or directory")
+
+    elif is_dir(path):  # windows access denied
+        print('directory rm')
+        try:
+            shutil.rmtree(path)
+        except FileNotFoundError:
+            print("No such file or directory")
+
+    elif is_template(path):
+        extension = is_template(path)
+        file_not_found = True
+        for file in os.listdir(os.getcwd()):
+            if file.endswith(extension):
+                os.remove(file)
+                file_not_found = False
+        if file_not_found:
+            print(f'File extension {extension} not found in this directory')
+
+
+def is_file(path):
+    path_split = path.split('.')
+    if len(path_split) == 2:
+        return path_split[0] and path_split[1]
+    else:
+        return False
+
+def is_dir(path):
+    return '..' in path or not '.' in path
+
+def is_template(path):
+    path_split = path.split('.')
+    if len(path_split) == 2:
+        if not path_split[0] and path_split[1]:
+            return '.' + path_split[1]
+        else:
+            return None
+    else:
+        return None
+
+def mv(old_name, new_name):
+    # print('mv')
+
+    if is_dir(new_name):
+        absolute_new_dir_path = absolute_path_of_dir(new_name)
+        print(absolute_new_dir_path)
+        if not file_dir_exists(absolute_new_dir_path):
+            return 'No such file or directory3'
+
+    if not is_template(old_name):
+
+        if is_dir(old_name):
+            # print('is dir')
+            absolute_old_dir_path = absolute_path_of_dir(old_name)
+            if not file_dir_exists(absolute_old_dir_path):
+                return 'No such file or directory1'
+
+        if is_file(old_name):
+            absolute_old_file_path = absolute_path_of_file(old_name)
+            if not file_dir_exists(absolute_old_file_path):
+                return 'No such file or directory2'
+                # print(absolute_old_file_path)
+            # old_name_split = old_name.split('\\')
+
+        if is_file(new_name):
+            absolute_new_file_path = absolute_path_of_file(new_name)
+            print(absolute_new_file_path)
+            if file_dir_exists(absolute_new_file_path):
+                return 'The file or directory already exists'
+
+        if is_file(old_name) and is_file(new_name):
+            shutil.copyfile(absolute_old_file_path, absolute_new_file_path)
+            rm(absolute_old_file_path)
+            return 'moved/renamed'
+
+        if is_file(old_name) and is_dir(new_name):
+
+            shutil.copy(absolute_old_file_path, absolute_new_dir_path)
+            rm(absolute_old_file_path)
+            return 'moved/renamed'
+
+        if is_dir(old_name) and is_dir(new_name):
+            print('move directory')
+            print(absolute_old_dir_path)
+            print(absolute_new_dir_path)
+            try:
+                destination = shutil.copytree(absolute_old_dir_path, absolute_new_dir_path)
+                print('dest'+ destination)
+                print('copied directory')
+                rm(absolute_old_dir_path)
+                return 'moved/renamed'
+            except FileExistsError:
+                return 'The file or directory already exists'
+
+    else:
+        extension = is_template(old_name)
+        return_str = f'File extension {extension} not found in this directory'
+        for file in os.listdir(os.getcwd()):
+            if file.endswith(extension):
+                if file_dir_exists(absolute_new_dir_path + os.sep + file):
+                    while True:
+                        print(f'{file} already exists in this directory. Replace? (y/n)')
+                        answer = input()
+                        if answer == 'y' or answer == 'n':
+                            break
+                    if answer == 'y':
+                        shutil.copy(file, absolute_new_dir_path)
+                        rm(file)
+                        return_str = 'moved/renamed'
+                        continue
+                    elif answer == 'n':
+                        return_str = 'moved/renamed'
+                        continue
+                else:
+                    shutil.copy(file, absolute_new_dir_path)
+                    return_str = 'moved/renamed'
+                    rm(file)
+                    continue
+        return return_str
+
+
+
+
+
+def mkdir(path):
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        print("The directory already exists")
+
+def absolute_path_of_file(path):
+    if ':' in path:
+        return path
+    else:
+        return os.getcwd() + os.sep + path
+
+
+def absolute_path_of_dir(dir):
+    current_dir = os.getcwd()
+    if dir == '..':
+        current_dir_split = current_dir.split(os.sep)
+        return os.sep.join(current_dir_split[:-1])
+    if dir == '.':
+        return current_dir
+    if ':' in dir:
+        return dir
+    else:
+        return current_dir + os.sep + dir
+
+
+def file_dir_exists(absolute_path):
+    path_split = absolute_path.split(os.sep)
+    print(path_split[-1])
+    print(os.sep.join(path_split[:-1]))
+    print(os.listdir(os.sep.join(path_split[:-1])))
+    if path_split[-1] in os.listdir(os.sep.join(path_split[:-1])):
+        print('True')
+        return True
+
+    else:
+        print('false')
+        return False
+
+
+
+def cp(old_name, new_dir):
+
+    absolute_new_dir_path = absolute_path_of_dir(new_dir)
+    print(absolute_new_dir_path)
+    if not file_dir_exists(absolute_new_dir_path):
+        return 'No such file or directory'
+
+    if not is_template(old_name):  # copy not using template
+        absolute_old_file_path = absolute_path_of_file(old_name)
+        if not file_dir_exists(absolute_old_file_path):
+            return 'No such file or directory'
+        # print(absolute_old_file_path)
+
+
+
+        old_name_split = old_name.split('\\')
+        if file_dir_exists(absolute_new_dir_path + os.sep + old_name_split[-1]):
+            return f'{old_name_split[-1]} already exists in this directory'
+        else:
+            shutil.copy(absolute_old_file_path, absolute_new_dir_path)
+            return 'copied'
+
+    else:  # copy using template
+        extension = is_template(old_name)
+        return_str = f'File extension {extension} not found in this directory'
+        for file in os.listdir(os.getcwd()):
+            if file.endswith(extension):
+                if file_dir_exists(absolute_new_dir_path + os.sep + file):
+                    while True:
+                        print(f'{file} already exists in this directory. Replace? (y/n)')
+                        answer = input()
+                        if answer == 'y' or answer == 'n':
+                            break
+                    if answer == 'y':
+                        shutil.copy(file, absolute_new_dir_path)
+                        return_str = 'copied'
+                        continue
+                    elif answer == 'n':
+                        return_str = 'copied'
+                        continue
+                else:
+                    shutil.copy(file, absolute_new_dir_path)
+                    return_str = 'copied'
+                    continue
+        return return_str
+
+
+os.chdir('module/root_folder')
+# os.chdir('C:\\Users\\krysn\\PycharmProjects\\sandbox\\module\\root_folder')
+print('Input the command\n')
+while True:
+    command = input()
+    command_split = command.split()
+    if command == "quit":
+        break
+    elif command == "pwd":
+        print(pwd())
+        continue
+    elif command_split[0] == "cd" and len(command_split) == 2:
+        cd(command_split[1])
+        continue
+
+    elif command_split[0] == "ls" and len(command_split) <= 2:
+        if len(command_split) == 1:
+            ls()
+        elif len(command_split) == 2:
+            ls(command_split[1])
+        continue
+
+    elif command_split[0] == "rm":
+        if len(command_split) == 2:
+            rm(command_split[1])
+        if len(command_split) == 1:
+            rm(None)
+        continue
+
+    elif command_split[0] == "mv":
+        if len(command_split) == 3:
+            return_string = mv(command_split[1], command_split[2])
+            if return_string and return_string != 'moved/renamed':
+                print(return_string)
+        else:
+            # print(len(command_split))
+            print('Specify the current name of the file or directory and the new location and/or name')
+        continue
+
+    elif command_split[0] == "mkdir":
+        if len(command_split) == 2:
+            mkdir(command_split[1])
+        elif len(command_split) != 2:
+            print('Specify the name of the directory to be made')
+        continue
+
+    elif command_split[0] == "cp":
+        if len(command_split) == 3:
+            return_string = cp(command_split[1], command_split[2])
+            if return_string and return_string != 'copied':
+                print(return_string)
+        elif len(command_split) > 3:
+            print(len(command_split))
+            print('Specify the current name of the file or directory and the new location and/or name')
+        elif len(command_split) < 3:
+            print('Specify the file')
+        continue
+
+    else:
+        print("Invalid command")
