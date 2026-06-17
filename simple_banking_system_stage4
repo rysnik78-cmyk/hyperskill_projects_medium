@@ -1,0 +1,176 @@
+# Write your code here
+
+import random
+import sqlite3
+
+def proper_checksum(zero_checksum_number):
+    zero_checksum_number_string = str(zero_checksum_number)
+    sum_of_digits = 0
+    for index in range(1, len(zero_checksum_number_string)):
+        number = int(zero_checksum_number_string[index - 1])
+        if index % 2 == 1:
+            number *= 2
+        if number > 9:
+            number -= 9
+        sum_of_digits += number
+    return (10 - sum_of_digits % 10) % 10
+
+def create_account(cust_account_number):
+    iin = 400000
+    zero_checksum_number = 10000000000 * iin + cust_account_number * 10
+    verified_card_number = zero_checksum_number + proper_checksum(zero_checksum_number)
+    pin = random.randint(1111, 9999)
+    balance = 0
+    # account_data = {verified_card_number: pin_balance_data}
+    # account_data_base.update(account_data)
+    print(f'Your card has been created\nYour card number:\n{verified_card_number}\nYour card PIN:\n{pin}')
+    verified_card_number_string = str(verified_card_number)
+    pin_string = str(pin)
+    cur.execute(f'INSERT INTO card (id, number, pin, balance) VALUES({cust_account_number}, {verified_card_number_string}, {pin_string}, {balance});')
+    conn.commit()
+    # cur.execute('SELECT id, number, pin, balance FROM card;')
+    # print(cur.fetchall())
+
+
+
+
+def balance(card_number):
+    cur.execute(f'SELECT balance FROM card WHERE number = {card_number};')
+    row_tuple = cur.fetchone()
+    # print(row_tuple[0])
+    return row_tuple[0]
+
+def cust_data_verified(card_number, pin):
+    cur.execute(f'SELECT pin FROM card WHERE number = {card_number};')
+    row_tuple = cur.fetchone()
+    # print(row_tuple)
+    if row_tuple:
+        if row_tuple[0] == pin:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def add_income(card_number, income):
+    cur.execute(f'UPDATE card SET balance = balance + {income} WHERE number = {card_number};')
+    conn.commit()
+
+def clear_database():
+    cur.execute('DELETE FROM card;')
+    conn.commit()
+
+def delete_account(card_number):
+    cur.execute(f'DELETE FROM card WHERE number = {card_number};')
+    conn.commit()
+
+def account_exists(card_number):
+    cur.execute(f'SELECT * FROM card WHERE number = {card_number};')
+    return cur.fetchone() != None
+
+# account_data_base = {}
+next_customer_account_number = 1
+
+conn = sqlite3.connect('card.s3db')
+cur = conn.cursor()
+clear_database()
+# Executes some SQL query
+# cur.execute('CREATE TABLE card (id INTEGER, number TEXT, pin TEXT, balance INTEGER DEFAULT 0);')
+
+# After making some changes in DB don't forget to commit them!
+# conn.commit()
+
+status = "main menu"
+main_menu_text = '1. Create an account\n2. Log into account\n0. Exit'
+account_menu_text = '''1. Balance
+2. Add income
+3. Do transfer
+4. Close account
+5. Log out
+0. Exit'''
+print(main_menu_text)
+current_card_number = 0
+while True:
+    command = input()
+    if status == 'main menu':
+
+        if command == '1':
+            create_account(next_customer_account_number)
+            # print(account_data_base)
+            next_customer_account_number += 1
+            print(main_menu_text)
+            continue
+        elif command == '2':
+            current_card_number = input('Enter your card number:')
+            pin = input('Enter your PIN:')
+            if cust_data_verified(current_card_number, pin):
+                print('You have successfully logged in!')
+                status = 'account menu'
+                print(account_menu_text)
+                continue
+            else:
+                print('Wrong card number or PIN!')
+                print(main_menu_text)
+                continue
+        elif command == '0':
+            break
+
+    elif status == 'account menu':
+        if command == '1':
+            print(f'Balance: {balance(current_card_number)}')
+            print(account_menu_text)
+            continue
+
+        elif command == '2':
+            print('Enter income:')
+            income= int(input())
+            add_income(current_card_number, income)
+            print('Income was added!')
+            continue
+
+        elif command == '3':
+            print('Transfer\nEnter card number:')
+            destination_card_number = input()
+            if destination_card_number[-1] != str(proper_checksum(destination_card_number)):
+                print('Probably you made a mistake in the card number. Please try again!')
+                continue
+            elif current_card_number == destination_card_number:
+                print("You can't transfer money to the same account!")
+                continue
+            elif not account_exists(destination_card_number):
+                print('Such a card does not exist.')
+                continue
+            else:
+                print('Enter how much money you want to transfer:')
+                transfer = int(input())
+                if balance(current_card_number) >= transfer:
+                    add_income(destination_card_number, transfer)
+                    add_income(current_card_number, - transfer)
+                    print('Success!')
+                    continue
+                else:
+                    print('Not enough money!')
+                    continue
+
+
+
+
+        elif command == '4':
+            delete_account(current_card_number)
+            print('The account has been closed!')
+            status = 'main menu'
+            print(main_menu_text)
+            continue
+
+        elif command == '5':
+            print('You have successfully logged out!')
+            status = 'main menu'
+            print(main_menu_text)
+            continue
+
+        elif command == '0':
+            break
+
+print('Bye!')
+# clear_database()
+# print(account_data_base)
