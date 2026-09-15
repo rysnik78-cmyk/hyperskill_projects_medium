@@ -1,0 +1,146 @@
+import os
+import string
+
+import requests
+import json
+from bs4 import BeautifulSoup
+from http import HTTPStatus
+
+# print('Input the URL:')
+# url = input()
+
+# Stage 1/5
+
+# headers = {'Accept': 'application/json'}
+# response = requests.get(url, headers=headers)
+# if response.status_code != 200:
+#     # print(response.status_code)
+#     print('Invalid resource!')
+#
+#
+# else:
+#     json_data = response.json()
+#     # print(json_data)
+#     if json_data['status'] == 200:
+#         print(response.json()['joke'])
+#     else:
+#         print('Invalid resource!')
+
+# Stage 2/5
+
+
+# if 'bbc.com' not in url or 'articles' not in url:
+#     print('Invalid page!')
+# else:
+#     headers = {'Accept-Language': 'en-US,en;q=0.5'}
+#     response = requests.get(url, headers=headers)
+#     if response.status_code != 200:
+#         # print(response.status_code)
+#         print('Invalid page!')
+#     else:
+#         output_dict = {}
+#         soup = BeautifulSoup(response.content, 'html.parser')
+#         # print(soup.prettify())
+#         p1 = soup.title
+#         output_dict['title'] = p1.text
+#         # print(p1)
+#         p2 = soup.find('meta',{'name': 'description'})
+#         # print(p2.get('content'))
+#         output_dict['description'] = p2.get('content')
+#         print(output_dict)
+
+# Stage 3/5
+
+
+# headers = {'Accept-Language': 'en-US,en;q=0.5'}
+# response = requests.get(url, headers=headers)
+# page_content = response.content
+# status = response.status_code
+# if status == 200:
+#     file = open('source.html', 'wb')
+#     file.write(page_content)
+#     print('Content saved.')
+# else:
+#     print(f'The URL returned {status}!')
+
+# Stage 4/5
+
+# url = 'http://books.toscrape.com/catalogue/page-1.html'
+# response = requests.get(url)
+# soup = BeautifulSoup(response.content, 'html.parser')
+# # print(soup.prettify())
+# books = soup.find_all('article')
+# # print(books[0])
+# # books = soup.find_all('article', {'p class': 'star-rating Five'})
+#
+# saved_books_list = []
+# for book in books:
+#     if book.find('p', {'class':'star-rating Five'}):
+#
+#         # print('star-rating Five')
+#         book_link_tag = book.find('h3').find('a')
+#         book_link = book_link_tag.get('href')
+#         book_title = book_link_tag.get('title')
+#         new_book_title = ''
+#         for char in book_title:
+#             if char not in string.punctuation:
+#                 new_book_title += char
+#         book_title_filename = new_book_title.rstrip().replace(' ', '_')
+#         # print(book_link)
+#         # print(book_title_filename)
+#         response2 = requests.get('http://books.toscrape.com/catalogue/' + book_link)
+#         soup2 = BeautifulSoup(response2.content, 'html.parser')
+#         # print(soup2.prettify())
+#         description = soup2.find_all('p')[3].text
+#         # p_tags = soup2.find(['div','p'], {'id':'product_description'})
+#         # print(description)
+#         file_to_save = open(book_title_filename + '.txt', 'w', encoding='utf-8')
+#         file_to_save.write(description)
+#         saved_books_list.append(book_title_filename + '.txt')
+#         file_to_save.close()
+# # print('Content saved.')
+# print(saved_books_list)
+
+# stage 5/5
+
+number_of_site_pages = int(input())
+rating_type = input()
+for page_number in range(1,number_of_site_pages + 1):
+    os.mkdir(f'Page_{page_number}')
+
+    url = f'http://books.toscrape.com/catalogue/page-{page_number}.html'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # print(soup.prettify())
+    books = soup.find_all('article')
+    # print(books[0])
+    # books = soup.find_all('article', {'p class': 'star-rating Five'})
+
+    saved_books_list = []
+    for book in books:
+        if book.find('p', {'class': f'star-rating {rating_type}'}):
+
+            # print('star-rating Five')
+            book_link_tag = book.find('h3').find('a')
+            book_link = book_link_tag.get('href')
+            book_title = book_link_tag.get('title')
+            new_book_title = ''
+            for char in book_title:
+                if char not in string.punctuation:
+                    new_book_title += char
+            book_title_filename = new_book_title.rstrip().replace(' ', '_')
+            # print(book_link)
+            # print(book_title_filename)
+            response2 = requests.get('http://books.toscrape.com/catalogue/' + book_link)
+            soup2 = BeautifulSoup(response2.content, 'html.parser')
+            # print(soup2.prettify())
+            description = soup2.find_all('p')[3].text
+            # p_tags = soup2.find(['div','p'], {'id':'product_description'})
+            # print(description)
+            file_to_save = open(f'Page_{page_number}\\{book_title_filename}.txt', 'w', encoding='utf-8')
+            file_to_save.write(description)
+            saved_books_list.append(book_title_filename + '.txt')
+            file_to_save.close()
+    # print('Content saved.')
+    print(saved_books_list)
+print('Saved all books')
