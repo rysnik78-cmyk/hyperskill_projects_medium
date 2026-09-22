@@ -1,0 +1,97 @@
+# write your code here
+import sys
+
+def compare_char(regex_char, string_char   ):
+
+    # print(len(regex))
+    # print(len(string))
+    if len(regex_char) == 0:
+        return True
+    if len(string_char) == 0:
+        return False
+    if regex_char =='.':
+        return True
+    if regex_char == string_char:
+        return True
+    return False
+
+def regex_first_letter_once(regex):
+    new_regex = regex[0]
+    if len(regex) > 2:
+        new_regex += regex[2:]
+    return new_regex
+
+def regex_first_letter_zero(regex):
+    if len(regex) > 2:
+        return regex[2:]
+    else:
+        return ''
+
+def regex_first_letter_extended(regex):
+    return regex[0] + regex
+
+def compare_equal(regex, string):
+    if len(regex) == 0:
+        return True
+    if regex == '$' and len(string) == 0:
+        return True
+    if len(string) == 0:
+        return False
+    if len(regex) > 1:
+        if regex[0] == '\\':
+            # print(regex[1], ' vs ', string[0])
+            if compare_char(regex[1], string[0]):
+                return compare_equal(regex[2:], string[1:])
+            else:
+                return False
+
+        # matches the preceding character zero times or once
+        if regex[1] == '?':
+            return compare_equal(regex_first_letter_once(regex), string) or compare_equal(regex_first_letter_zero(regex), string)
+
+        # matches the preceding character zero or more times
+        if regex[1] == '*':
+            return compare_equal(regex_first_letter_zero(regex), string) or compare_equal(regex_first_letter_extended(regex), string)
+
+        # matches the preceding character once or more times
+        if regex[1] == '+':
+            return compare_equal(regex_first_letter_once(regex), string) or compare_equal(regex_first_letter_extended(regex), string)
+
+        if regex[0] == '\\':
+            # print(regex[1], ' vs ',string[0])
+
+            if compare_char(regex[1], string[0]):
+                return compare_equal(regex[2:], string[1:])
+
+
+    if compare_char(regex[0], string[0]):
+        return compare_equal(regex[1:], string[1:])
+    return False
+
+def compare_not_equal(regex, string):
+    if len(regex) == 0:
+        return True
+
+    if len(string) == 0:
+        return False
+
+    # print(regex,' ',string)
+    # print(len(regex))
+    # print(len(string))
+    if regex[0] == '^':
+        return compare_equal(regex[1:], string)
+    # print(string[0:len(regex)-1])
+    if compare_equal(regex, string):
+        return True
+    #     print('True1')
+    if len(regex) and len(string):
+        return compare_not_equal(regex, string[1:])
+    return False
+
+
+sys.setrecursionlimit(10000)
+input_string = input()
+input_split = input_string.split('|')
+print(compare_not_equal(input_split[0], input_split[1]))
+
+
