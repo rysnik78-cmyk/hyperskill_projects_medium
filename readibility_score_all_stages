@@ -6,21 +6,25 @@
 import sys
 import os
 from nltk.tokenize import sent_tokenize
+from nltk.tokenize import regexp_tokenize
 
 
 args = sys.argv  # we get the list of arguments from command line
-if len(args) == 1:
-    if os.access(args[0], os.F_OK):
-        with open(args[0], 'r') as file:
-            text = file.read()
-    else:
-        text = input()
+# print('Arguments:', args)
+with open(args[1], 'r') as file:
+    text = file.read()
+    print('cos')
+    print('Text:', text)
 
-symbol_number = len(text)
-print(symbol_number)
-sentences_number = len(sent_tokenize(text))
-print(sentences_number)
-if symbol_number > 100 or sentences_number > 3:
+
+sentences = sent_tokenize(text)
+sum_of_words = 0
+for sentence in sentences:
+    words = regexp_tokenize(sentence, r"[0-9A-z']+")
+    sum_of_words += len(words)
+average_number_of_words = sum_of_words / len(sentences)
+
+if average_number_of_words > 10:
     print("Difficulty: HARD")
 else:
     print("Difficulty: EASY")
