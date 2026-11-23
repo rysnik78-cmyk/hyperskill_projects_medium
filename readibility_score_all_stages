@@ -7,27 +7,33 @@ import sys
 import os
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize import regexp_tokenize
+import math
 
 
 args = sys.argv  # we get the list of arguments from command line
 # print('Arguments:', args)
 with open(args[1], 'r') as file:
     text = file.read()
-    print('cos')
-    print('Text:', text)
 
-
+print('Text:', text)
 sentences = sent_tokenize(text)
-sum_of_words = 0
-for sentence in sentences:
-    words = regexp_tokenize(sentence, r"[0-9A-z']+")
-    sum_of_words += len(words)
-average_number_of_words = sum_of_words / len(sentences)
+number_of_sentences = len(sentences)
 
-if average_number_of_words > 10:
-    print("Difficulty: HARD")
-else:
-    print("Difficulty: EASY")
+number_of_words = len(regexp_tokenize(text, r"[0-9A-z']+"))
+
+number_of_symbols = 0
+for letter in text:
+    if letter not in [' ', '\n', '\t']:
+        number_of_symbols += 1
+
+print('Characters:', number_of_symbols)
+print('Sentences:', number_of_sentences)
+print('Words:', number_of_words)
+
+# Automated readability index.
+ari_score = 4.71 * number_of_symbols / number_of_words + 0.5 * number_of_words / number_of_sentences - 21.43
+ari_score_ceil = math.ceil(ari_score)
+print(f'Automated Readability Index: {ari_score_ceil} (this text should be understood by {ari_score_ceil + 4}-{ari_score_ceil + 5} year olds).')
 
 
 
