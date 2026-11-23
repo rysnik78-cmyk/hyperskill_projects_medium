@@ -16,6 +16,11 @@ args = sys.argv  # we get the list of arguments from command line
 with open(args[1], 'r') as file:
     text = file.read()
 
+with open(args[2], 'r') as file:
+    difficult_words = list(file.read().split('\n'))
+
+# print(difficult_words)
+
 print('Text:', text)
 sentences = sent_tokenize(text)
 number_of_sentences = len(sentences)
@@ -30,36 +35,53 @@ for letter in text:
 number_of_syllables = 0
 for word in words:
     number_of_syllables_in_word = len(regexp_tokenize(word, r'[aeiouy]+'))
-    print(word)
-    if number_of_syllables > 0 and re.match(r'[aeiouy]', word[::-1]):
+    # print(word)
+    if number_of_syllables > 0 and re.match(r'[e]', word[::-1]):
         number_of_syllables_in_word -= 1
 
     if number_of_syllables_in_word == 0:
         number_of_syllables_in_word += 1
-    print(number_of_syllables_in_word)
+    # print(number_of_syllables_in_word)
     number_of_syllables += number_of_syllables_in_word
 
+number_of_difficult_words = 0
+for word in words:
+    if word not in difficult_words:
+        # print(word)
+        number_of_difficult_words += 1
 
+        # print(number_of_difficult_words)
 
 print('Characters:', number_of_symbols)
 print('Sentences:', number_of_sentences)
 print('Words:', number_of_words)
+print('Difficult Words:', number_of_difficult_words)
 print('Syllables:', number_of_syllables)
 
 # Automated readability index.
 ari_score = 4.71 * number_of_symbols / number_of_words + 0.5 * number_of_words / number_of_sentences - 21.43
 ari_score_ceil = math.ceil(ari_score)
 low_ari = ari_score_ceil + 4
-high_ari = ari_score_ceil + 5
+high_ari = low_ari + 1
 print(f'Automated Readability Index: {ari_score_ceil} (this text should be understood by {low_ari}-{high_ari} year olds).')
 
 fk_score = 0.39 * number_of_words / number_of_sentences + 11.8 * number_of_syllables / number_of_words - 15.59
 fk_score_ceil = math.ceil(fk_score)
 low_fk = fk_score_ceil + 4
-high_fk = fk_score_ceil + 5
-print(f'Flesch-Kincaid Readability Test: {fk_score_ceil} (about {fk_score_ceil + 4}-{fk_score_ceil + 5} year olds).')
-age_low = min(low_ari, low_fk)
-age_high = max(high_ari, high_fk)
+high_fk = low_fk + 1
+print(f'Flesch-Kincaid Readability Test: {fk_score_ceil} (about {low_fk}-{high_fk} year olds).')
+adjustment = 0
+if number_of_difficult_words / number_of_words * 100 >= 5:
+    adjustment = 3.6365
+jc_score = 0.1579 * (number_of_difficult_words / number_of_words * 100) + 0.0496 * number_of_words / number_of_sentences + adjustment
+
+jc_score_ceil = math.ceil(jc_score)
+low_jc = jc_score_ceil + 4
+high_jc = low_jc + 1
+print(f'Dale-Chall Readability Index: {jc_score_ceil}. The text can be understood by {low_jc}-{high_jc} year olds.')
+
+age_low = min(low_ari, low_fk, low_jc)
+age_high = max(high_ari, high_fk, high_jc)
 average_score = (age_low + age_high) / 2
 
 print(f'This text should be understood in average by {average_score} year olds.')
