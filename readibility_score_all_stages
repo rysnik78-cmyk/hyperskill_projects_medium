@@ -1,0 +1,33 @@
+# Write your code here
+
+# import nltk
+# nltk.download('punkt_tab')
+
+import sys
+import os
+from nltk.tokenize import sent_tokenize
+
+
+args = sys.argv  # we get the list of arguments from command line
+if len(args) == 1:
+    if os.access(args[0], os.F_OK):
+        with open(args[0], 'r') as file:
+            text = file.read()
+    else:
+        text = input()
+
+symbol_number = len(text)
+print(symbol_number)
+sentences_number = len(sent_tokenize(text))
+print(sentences_number)
+if symbol_number > 100 or sentences_number > 3:
+    print("Difficulty: HARD")
+else:
+    print("Difficulty: EASY")
+
+
+
+
+
+
+
