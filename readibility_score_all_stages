@@ -8,6 +8,7 @@ import os
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize import regexp_tokenize
 import math
+import re
 
 
 args = sys.argv  # we get the list of arguments from command line
@@ -18,25 +19,50 @@ with open(args[1], 'r') as file:
 print('Text:', text)
 sentences = sent_tokenize(text)
 number_of_sentences = len(sentences)
-
-number_of_words = len(regexp_tokenize(text, r"[0-9A-z']+"))
+words = regexp_tokenize(text, r"[0-9A-z']+")
+number_of_words = len(words)
 
 number_of_symbols = 0
 for letter in text:
     if letter not in [' ', '\n', '\t']:
         number_of_symbols += 1
 
+number_of_syllables = 0
+for word in words:
+    number_of_syllables_in_word = len(regexp_tokenize(word, r'[aeiouy]+'))
+    print(word)
+    if number_of_syllables > 0 and re.match(r'[aeiouy]', word[::-1]):
+        number_of_syllables_in_word -= 1
+
+    if number_of_syllables_in_word == 0:
+        number_of_syllables_in_word += 1
+    print(number_of_syllables_in_word)
+    number_of_syllables += number_of_syllables_in_word
+
+
+
 print('Characters:', number_of_symbols)
 print('Sentences:', number_of_sentences)
 print('Words:', number_of_words)
+print('Syllables:', number_of_syllables)
 
 # Automated readability index.
 ari_score = 4.71 * number_of_symbols / number_of_words + 0.5 * number_of_words / number_of_sentences - 21.43
 ari_score_ceil = math.ceil(ari_score)
-print(f'Automated Readability Index: {ari_score_ceil} (this text should be understood by {ari_score_ceil + 4}-{ari_score_ceil + 5} year olds).')
+low_ari = ari_score_ceil + 4
+high_ari = ari_score_ceil + 5
+print(f'Automated Readability Index: {ari_score_ceil} (this text should be understood by {low_ari}-{high_ari} year olds).')
 
+fk_score = 0.39 * number_of_words / number_of_sentences + 11.8 * number_of_syllables / number_of_words - 15.59
+fk_score_ceil = math.ceil(fk_score)
+low_fk = fk_score_ceil + 4
+high_fk = fk_score_ceil + 5
+print(f'Flesch-Kincaid Readability Test: {fk_score_ceil} (about {fk_score_ceil + 4}-{fk_score_ceil + 5} year olds).')
+age_low = min(low_ari, low_fk)
+age_high = max(high_ari, high_fk)
+average_score = (age_low + age_high) / 2
 
-
+print(f'This text should be understood in average by {average_score} year olds.')
 
 
 
